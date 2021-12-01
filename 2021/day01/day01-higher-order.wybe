@@ -1,0 +1,35 @@
+
+def fold_window2(f:(A,A,!S), as:list(A), !s:S) {
+    if { [?a0 | ?as] = as & [?a1 | _] = as ::
+        f(a0, a1, !s)
+        fold_window2(f, as, !s)
+    }
+}
+
+def fold_window4(f:(A,A,A,A,!S), as:list(A), !s:S) {
+    if { [?a0 | ?as] = as & [?a1, ?a2, ?a3 | _] = as ::
+        f(a0, a1, a2, a3, !s)
+        fold_window4(f, as, !s)
+    }
+}
+
+
+def read_ints(?is:list(int)) use !io {
+    ?is = []
+    do {
+        !read(?i)
+        until i < 0
+        ?is = [i | is]
+    }
+    reverse(is, ?is)
+}
+
+!read_ints(?depths)
+
+?count = 0
+fold_window2({ if { @ < @ :: incr(!@) } }, depths, !count)
+!print("Part 1: "); !println(count)
+
+?count = 0
+fold_window4({ if { @1 < @4 :: incr(!@5) } }, depths, !count)
+!print("Part 2: "); !println(count)
