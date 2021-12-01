@@ -1,0 +1,37 @@
+# part-1 values
+?count_p1 = -1
+?prev = -1
+
+# part-2 values
+?count_p2 = 0
+?window_size = 3
+?sum = 0
+?window = []
+
+do {
+    # sadly `read` is not a test, so a sentinel is used
+    !read(?value)
+    if { value < 0 :: break }
+
+    # handle part-1
+    if { prev < value :: incr(!count_p1) }
+    ?prev = value
+
+    # handle part-2
+    ?window = window ,, [value]
+    if { length(window) <= window_size ::
+        ?sum = sum + value
+       | else ::
+        if { [?old_value | ?window] = window ::
+            ?prev_sum = sum
+            ?sum = prev_sum - old_value + value
+            if { sum > prev_sum :: incr(!count_p2) }
+           | else :: !error("something went wrong")}
+       }
+}
+
+if { count_p1 < 0 :: !println(c"no values read")
+   | else :: 
+    !print("part-1: "); !println(count_p1)
+    !print("part-2: "); !println(count_p2)
+   }
