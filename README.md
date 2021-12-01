@@ -1,4 +1,4 @@
-# Advent of Code 2021
+# The Advent of Code
 
 ### Written in Wybe
 
