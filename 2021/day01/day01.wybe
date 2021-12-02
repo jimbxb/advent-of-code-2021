@@ -1,37 +1,27 @@
-# part-1 values
-?count_p1 = -1
-?prev = -1
 
-# part-2 values
-?count_p2 = 0
-?window_size = 3
-?sum = 0
-?window = []
-
-do {
-    # sadly `read` is not a test, so a sentinel is used
-    !read(?value)
-    if { value < 0 :: break }
-
-    # handle part-1
-    if { prev < value :: incr(!count_p1) }
-    ?prev = value
-
-    # handle part-2
-    ?window = window ,, [value]
-    if { length(window) <= window_size ::
-        ?sum = sum + value
-       | else ::
-        if { [?old_value | ?window] = window ::
-            ?prev_sum = sum
-            ?sum = prev_sum - old_value + value
-            if { sum > prev_sum :: incr(!count_p2) }
-           | else :: !error("something went wrong")}
-       }
+def read_ints(?is:list(int)) use !io {
+    ?is = []
+    do {
+        !read(?i)
+        until i < 0
+        ?is = [i | is]
+    }
+    reverse(is, ?is)
 }
 
-if { count_p1 < 0 :: !println(c"no values read")
-   | else :: 
-    !print("part-1: "); !println(count_p1)
-    !print("part-2: "); !println(count_p2)
-   }
+def {test} `[]`(as:list(A), idx:int, ?a:A) {
+    if { idx < 0 :: fail }
+    [?a | ?as] = as
+    if { idx > 0 :: ?a = as[idx - 1] }
+}
+
+def fold_window(n:int, as:list(int), s0:int, ?s:int) {
+    if { as = [?a0 | ?as] & as[n] = ?a1 :: 
+        if { a0 < a1 :: incr(!s0) }
+        fold_window(n, as, s0, ?s)
+    | else :: ?s = s0 }
+}
+
+!read_ints(?depths)
+!print("Part 1: "); !println(fold_window(0, depths, 0))
+!print("Part 2: "); !println(fold_window(2, depths, 0))
