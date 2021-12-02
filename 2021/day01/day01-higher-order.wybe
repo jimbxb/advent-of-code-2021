@@ -22,12 +22,11 @@ def fold_window(n:int, f:(A,A,!S), as:list(A), !s:S) {
     }
 }
 
+def solve(n:int, depths:list(int), ?count:int) {
+    ?count = 0
+    fold_window(n, { if { @ < @ :: incr(!@) } }, depths, !count)
+}
+
 !read_ints(?depths)
-
-?count = 0
-fold_window(0, { if { @ < @ :: incr(!@) } }, depths, !count)
-!print("Part 1: "); !println(count)
-
-?count = 0
-fold_window(2, { if { @ < @ :: incr(!@) } }, depths, !count)
-!print("Part 2: "); !println(count)
+!print("Part 1: "); !println(solve(0, depths))
+!print("Part 2: "); !println(solve(2, depths))
