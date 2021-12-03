@@ -1,0 +1,4 @@
+Compiling 2021/day03/day03
+Error detected during loading module: day03
+[91m2021/day03/day03.wybe:106:15: Syntax error: unexpected end of input
+[0mCannot run ./2021/day03/day03

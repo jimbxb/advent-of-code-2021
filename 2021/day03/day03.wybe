@@ -1,0 +1,93 @@
+type state { 
+    pub state(n:int, counts:list(int), numbers:list(string))
+
+    pub def {test} (a:_ = b:_) { fail } # we don't care about equality
+
+    pub def init(len:int):_ = s where {
+        ?counts = []
+        do {
+            while len > 0
+            ?len = len - 1
+            ?counts = [0 | counts]
+        }
+        ?s = state(0, counts, [])
+    }
+
+    pub def update(!s:_, input:string) {
+        state(?n, ?counts, ?numbers) = s
+        incr(!n)
+        update(!counts, input)
+        ?numbers = [input | numbers]
+        ?s = state(n, counts, numbers)        
+    }
+
+    def update(!counts:list(int), input:string) {
+        if { [?ch | ?input] = input & [?count | ?counts] = counts ::
+            if { ch = '1' :: incr(!count) }
+            update(!counts, input)
+            ?counts = [count | counts]
+        }
+    }
+}
+
+def part1(n:int, counts:list(int)) use !io {
+    ?gamma = 0; ?epsilon = 0
+    for ?count in counts {
+        ?gamma = gamma * 2
+        ?epsilon = epsilon * 2
+        if { 2 * count <= n :: incr(!gamma) | else :: incr(!epsilon) }
+    }
+
+    !print("gamma:   "); !println(gamma)
+    !print("epsilon: "); !println(epsilon)
+    !print("power:   "); !println(gamma * epsilon)
+}
+
+def part2(n:int, numbers:list(string)) use !io {
+    rate(true,  n, numbers, 0, ?oxygen)
+    rate(false, n, numbers, 0, ?co2)
+    
+    !print("oxygen:  "); !println(oxygen)
+    !print("co2:     "); !println(co2)
+    !print("rating:  "); !println(oxygen * co2)
+}
+
+def rate(majority:bool, n:int, numbers:list(string), idx:int, ?rating:int) {
+    if { n = 1 & [?number | _] = numbers :: 
+        ?rating = 0
+        for ?bit in number {
+            ?rating = rating * 2
+            if { bit = '1' :: incr(!rating) }
+        }
+    | else ::
+        ?count = 0 
+        for ?number in numbers {
+            if { number[idx] = '1' :: incr(!count) }
+        }
+        ?bit = if { if { majority :: 2 * count >= n 
+                       | else     :: 2 * count <  n } :: '1' 
+                  | else :: '0' }
+        ?correct = []
+        for ?number in numbers {
+            if { number[idx] = bit :: ?correct = [number | correct] }
+        }
+        ?rating = rate(
+            majority,
+            length(correct), 
+            correct, 
+            idx + 1
+        )
+    }
+}
+
+?state = init(12)
+
+do { 
+    !read(?input)
+    until input = ""
+    update(!state, input)
+}
+
+state(?n, ?counts, ?numbers) = state
+!part1(n, counts)
+!part2(n, numbers)
