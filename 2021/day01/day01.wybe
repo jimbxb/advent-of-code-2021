@@ -10,9 +10,9 @@ def read_ints(?is:list(int)) use !io {
 }
 
 def {test} `[]`(as:list(A), idx:int, ?a:A) {
-    if { idx < 0 :: fail }
+    idx >= 0
     [?a | ?as] = as
-    if { idx > 0 :: ?a = as[idx - 1] }
+    (idx = 0 | ?a = as[idx - 1])
 }
 
 def fold_window(n:int, as:list(int), s0:int, ?s:int) {
