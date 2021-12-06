@@ -1,0 +1,173 @@
+
+pub type cell {
+    pub cell(value:int, marked:bool)
+
+    pub def {test} parse(!str:string, ?cell:cell) {
+        ?n = 0
+        ?read = false
+        do {
+            while [?c | ?str] = str
+            if { c = ' ' ::
+                until read
+            | else ::
+                ?read = true
+                '0' <= c & c <= '9'
+                foreign lpvm cast(c, ?i)
+                ?n = n * 10 + (i - 48):int
+            }
+        }
+        read = true
+        ?cell = cell(n, false)
+    }
+
+    pub def print(cell:_) use !io {
+        cell(?n, ?read) = cell
+        if { n < 10 :: !print(' ')}
+        !print(if { read :: " *" | else :: "  "})
+        !print(n)
+    }
+
+    pub def mark(!cell:_) { marked(!cell, true) }
+}
+
+type board {
+    pub board(list(list(cell))) 
+
+    def {test} (a:_ = b:_) { fail }
+
+    pub def {test} parse(lines:list(string), ?board:_) {
+        (length(lines) = 5)
+        ?bools = []
+        ?rows = []
+        for ?line in lines { 
+            parse(line, ?row)
+            ?rows = [row | rows] 
+        }
+        ?board = board(rows)
+    }
+
+    def {test} parse(line:string, ?row:list(cell)) {
+        ?row = []
+        do {
+            while line ~= ""
+            parse(!line, ?cell)
+            ?row = [cell | row]
+        }
+        length(row) = 5
+        reverse(row, ?row)
+    }
+
+    pub def print(board:_) use !io {
+        board(?rows) = board
+        for ?row in rows {
+            for ?cell in row {
+                !print(cell)
+            }
+            !nl
+        }
+    }
+
+    pub def update(!board:_, n:int) {
+        board(?rows) = board
+        ?new_rows = []
+        for ?row in rows {
+            ?new_row = []
+            for ?cell in row {
+                if {cell^value = n :: mark(!cell)}
+                ?new_row = [cell | new_row]
+            }
+            ?new_rows = [reverse(new_row) | new_rows]
+        }
+        ?board = board(reverse(new_rows))
+    }
+
+    pub def score(board:_):int = score where {
+        ?score = 0
+        board(?rows) = board
+        for ?row in rows {
+            for ?cell in row {
+                if { ~(cell^marked) :: ?score = score + cell^value }
+            }
+        }
+    }
+
+    pub def winner(board:_, ?win:bool) {
+        ?win = false
+        board(?rows) = board
+        for ?row_num in 0..5; ?row in rows {
+            ?row_marked = true
+            for ?cell in row { ?row_marked = (row_marked && cell^marked) }
+
+            ?col_marked = true
+            for ?col_num in 0..5 { 
+                if { rows[col_num][row_num] = ?cell :: 
+                    ?col_marked = (col_marked && cell^marked)
+                }
+            } 
+            
+            ?win = (row_marked || col_marked || win)
+        }
+    }
+
+    pub def {test} `[]`(xs:list(T), idx:int):T = x where {
+        idx >= 0
+        index(xs, idx, ?x)
+    }
+
+    def {test} index(xs:list(T), idx:int):T = x where {
+        [?x | ?xs] = xs
+        (idx = 0 | index(xs, idx - 1, ?x))
+    }
+}
+
+def nums(str:string, ?ns:list(int)) {
+    ?ns = []
+    ?n = 0
+    do {
+        while [?c | ?str] = str
+        if { c = ',' :: ?ns = [n | ns]; ?n = 0; next 
+        | else :: 
+            foreign lpvm cast(c, ?i)
+            ?n = n * 10 + (i - 48):int
+        }
+    }
+    reverse([n | ns], ?ns)
+}
+
+
+!read(?num_str:string)
+!read(?_:string)
+
+?lines = []
+?boards = []
+do {
+    !read(?line)
+    if { line = "" :: 
+        if { parse(lines, ?board) :: 
+            ?boards = [board | boards]
+            ?lines = []
+        | else :: break }
+    | else :: ?lines = [line | lines] }
+}
+
+?won = false
+for ?n in nums(num_str) {
+    ?new_boards = []
+    for ?board in boards {
+        update(!board, n) 
+        if { winner(board) ::
+            ?done = (length(boards) = 1)
+            if { ~won :: !print("Part 1: ") }
+            if { done :: !print("Part 2: ") }
+            if { ~won || done :: 
+                !println(score(board) * n)
+                !print(board)
+                until done
+            }
+            ?won = true
+        | else :: 
+            ?new_boards = [board | new_boards]
+        }
+    }
+    ?boards = new_boards
+}
